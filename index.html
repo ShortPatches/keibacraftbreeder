@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <meta content="width=device-width,initial-scale=1" name="viewport"/>
+        <title>
+            Keibacraft Horse Breeding Planner
+        </title>
+        <style>
+            :root {
+                --bg: #101815;
+                --panel: #1a2520;
+                --panel2: #223129;
+                --text: #edf4ec;
+                --muted: #b1c2b4;
+                --accent: #d7b46a;
+                --line: #3b5043;
+                --good: #9bd6a8;
+                --warn: #f2c879;
+                --bad: #ff9b91
+            }
+
+            * {
+                box-sizing: border-box
+            }
+
+            body {
+                margin: 0;
+                background: radial-gradient(ellipse at top, #24372b 0, #101815 58%);
+                color: var(--text);
+                font: 15px/1.5 system-ui, -apple-system, Segoe UI, sans-serif
+            }
+
+            header {
+                padding: 28px max(18px, calc((100% - 1100px)/2));
+                border-bottom: 1px solid var(--line);
+                background: #101815dd
+            }
+
+            h1 {
+                margin: 0;
+                font-size: clamp(1.5rem, 3vw, 2.3rem)
+            }
+
+            header p {
+                color: var(--muted);
+                margin: 8px 0 0;
+                max-width: 780px
+            }
+
+            .wrap {
+                max-width: 1100px;
+                margin: auto;
+                padding: 20px 16px 56px
+            }
+
+            .tabs {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+                margin-bottom: 18px
+            }
+
+            .tab,
+            button {
+                border: 1px solid var(--line);
+                background: var(--panel2);
+                color: var(--text);
+                border-radius: 10px;
+                padding: 10px 14px;
+                cursor: pointer;
+                font-weight: 650
+            }
+
+            .tab.active,
+            button.primary {
+                background: var(--accent);
+                color: #182018;
+                border-color: var(--accent)
+            }
+
+            button.danger {
+                border-color: #87544e;
+                color: #ffd5ce;
+                background: #382522
+            }
+
+            .tab:hover,
+            button:hover {
+                filter: brightness(1.12)
+            }
+
+            .panel {
+                background: #1a2520ee;
+                border: 1px solid var(--line);
+                border-radius: 16px;
+                padding: 18px;
+                margin-bottom: 16px;
+                box-shadow: 0 8px 24px #0002
+            }
+
+            .hidden {
+                display: none !important
+            }
+
+            .grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 14px
+            }
+
+            .grid3 {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 12px
+            }
+
+            .field {
+                display: flex;
+                flex-direction: column;
+                gap: 5px
+            }
+
+            label {
+                font-size: .88rem;
+                color: var(--muted)
+            }
+
+            input,
+            select,
+            textarea {
+                width: 100%;
+                padding: 10px;
+                border-radius: 8px;
+                border: 1px solid var(--line);
+                background: #101815;
+                color: var(--text);
+                font: inherit
+            }
+
+            input[type=number] {
+                appearance: textfield
+            }
+
+            textarea {
+                min-height: 72px;
+                resize: vertical
+            }
+
+            .wide {
+                grid-column: 1/-1
+            }
+
+            .muted {
+                color: var(--muted)
+            }
+
+            .small {
+                font-size: .86rem
+            }
+
+            .cards {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 12px
+            }
+
+            .horse-card {
+                background: var(--panel2);
+                border: 1px solid var(--line);
+                border-radius: 12px;
+                padding: 14px
+            }
+
+            .horse-card h3 {
+                margin: 0 0 4px
+            }
+
+            .pill {
+                display: inline-block;
+                border: 1px solid var(--line);
+                border-radius: 999px;
+                padding: 2px 9px;
+                font-size: .77rem;
+                color: var(--muted);
+                margin: 3px 4px 3px 0
+            }
+
+            .stat {
+                font-size: 1.35rem;
+                font-weight: 750
+            }
+
+            .result {
+                border-left: 4px solid var(--good);
+                padding: 10px 12px;
+                background: #17251b;
+                border-radius: 8px;
+                margin: 8px 0
+            }
+
+            .result.warn {
+                border-color: var(--warn);
+                background: #2a2518
+            }
+
+            .result.bad {
+                border-color: var(--bad);
+                background: #2a1d1b
+            }
+
+            .actions {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+                margin-top: 14px
+            }
+
+            .section-title {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                flex-wrap: wrap
+            }
+
+            h2 {
+                font-size: 1.25rem;
+                margin: 0 0 12px
+            }
+
+            h3 {
+                font-size: 1.05rem
+            }
+
+            .tablewrap {
+                overflow: auto
+            }
+
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                min-width: 500px
+            }
+
+            th,
+            td {
+                text-align: left;
+                padding: 9px;
+                border-bottom: 1px solid var(--line);
+                vertical-align: top
+            }
+
+            th {
+                color: var(--muted);
+                font-size: .85rem
+            }
+
+            .notice {
+                padding: 12px;
+                border: 1px solid #7c6840;
+                background: #2a2518;
+                border-radius: 10px;
+                color: #f8e5ba
+            }
+
+            .empty {
+                padding: 28px;
+                text-align: center;
+                color: var(--muted);
+                border: 1px dashed var(--line);
+                border-radius: 12px
+            }
+
+            .footer {
+                color: var(--muted);
+                font-size: .85rem;
+                margin-top: 20px
+            }
+
+            .inline {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap
+            }
+
+            .right {
+                margin-left: auto
+            }
+
+            @media(max-width:650px) {
+
+                .grid,
+                .grid3 {
+                    grid-template-columns: 1fr
+                }
+
+                .panel {
+                    padding: 14px
+                }
+
+                .wrap {
+                    padding: 14px 10px 40px
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>Keibacraft Horse Breeding Planner</h1>
+            <p>Organise your Horses, compare breeding pairs, estimate simple inheritance, and flag known coat-linked health issues.</p>
+        </header>
+
+        <!--Tab buttons-->
+        <div class="wrap">
+            <div class="tabs">
+                <button class="tab active" data-tab="herd" type="button">Horse Registry</button>
+                <button class="tab" data-tab="compare" type="button">Compare</button>
+                <button class="tab" data-tab="planner" type="button">Breed Planner</button>
+                <button class="tab" data-tab="backup" type="button">Backup & Guide</button>
+            </div>
+
+            <!--Horse name section-->
+            <section class="view" id="herd"><div class="panel">
+                <div class="section-title"></div>
+                <h2 id="formTitle">Horse</h2>
+                    <span class="muted small">Fields marked optional can be left blank</span>
+                    <p></p>
+                    <form id="horseForm"><input id="horseId" type="hidden"/>
+                        <div class="grid">
+
+                        <!--Name, Sex and Pedigree-->
+                            <div class="field"><label for="name">Horse name *</label><input id="name" placeholder="e.g. Copperfield" required=""/></div>
+                            <div class="field"><label for="sex">Sex</label>
+                                <select id="sex">
+                                    <option value="Mare">Mare</option>
+                                    <option value="Stallion">Stallion</option>
+                                    <option value="Gelding">Gelding</option>
+                                </select>
+                            </div>
+                            <div class="field"><label for="lineage">Pedigree</label>
+                                <input id="lineage" placeholder="Sire/Dam"/>
+                            </div>
+                            <div class="field"><label for="healthNotes">Genetic Notes</label>
+                                <input id="healthNotes" placeholder="Genetic Issues"/>
+                            </div>
+                        </div>
+
+                        <!-- Data Validation and Height -->
+                        <h3>Physical Characteristics</h3>
+                        <div class="grid3">
+                            <div class="field"><label for="size">Adult size (optional)</label>
+                                <input id="size" placeholder="e.g. 14.2 hands/150cm"/>
+                            </div>
+                            <div class="field"><label for="confidence">Verified Data</label>
+                                <select id="confidence">
+                                    <option>Unverified</option>
+                                    <option>Verified</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Genetic Markers -->
+                        <div class="field wide"><label for="genes">Allele pairs (one locus per line.)</label>
+                            <textarea id="genes" placeholder="Use the exact allele notation from your Gene Book, e.g. &#10;Frame: N/n&#10;Extension: E/e&#10;Agouti: A/a"></textarea>
+                            <span class="muted small">For probability calculations, use two allele tokens per line separated by "/" or a space (e.g. N/n). Keep the locus name before the colon.                          </span>
+                        </div>
+                        <p></p>
+
+                        <!-- Physical Genes -->
+                        <h2>Physical Examination</h2>
+
+                        <!-- Health Genes -->
+                        <p><strong>Health</strong></p>
+                        <div class="grid3">
+                            <div class="field">
+                                <label for="lhealth">Lung Health</label>
+                                    <select id="lhealth">
+                                        <option value="">Unknown</option>
+                                        <option value="Abysmal">Abysmal</option>
+                                        <option value="Poor">Poor</option>
+                                        <option value="Average">Average</option>
+                                        <option value="Good">Good</option>
+                                        <option value="Excellent">Excellent</option>
+                                    </select>
+                            </div>
+                            <div class="field"><label for="ghealth">Gut Health</label>
+                                    <select id="ghealth">
+                                        <option value="">Unknown</option>
+                                        <option value="Abysmal">Abysmal</option>
+                                        <option value="Poor">Poor</option>
+                                        <option value="Average">Average</option>
+                                        <option value="Good">Good</option>
+                                        <option value="Excellent">Excellent</option>
+                                    </select>
+                            </div>
+                            <div class="field"><label for="hhealth">Hoof Health</label>
+                                    <select id="hhealth">
+                                        <option value="">Unknown</option>
+                                        <option value="Abysmal">Abysmal</option>
+                                        <option value="Poor">Poor</option>
+                                        <option value="Average">Average</option>
+                                        <option value="Good">Good</option>
+                                        <option value="Excellent">Excellent</option>
+                                    </select>
+                            </div>
+                        </div>
+
+                        <!-- Athleticism and Energy -->
+                        <p><strong>Speed and Jumping</strong></p>
+                        <div class="grid">
+                            <div class="field"><label for="athl">Athleticism</label>
+                                    <select id="athl">
+                                        <option value="">Unknown</option>
+                                        <option value="Abysmal">Abysmal</option>
+                                        <option value="Poor">Poor</option>
+                                        <option value="Average">Average</option>
+                                        <option value="Good">Good</option>
+                                        <option value="Excellent">Excellent</option>
+                                    </select>
+                            </div>
+                            <div class="field"><label for="ener">Energy</label>
+                                    <select id="ener">
+                                        <option value="">Unknown</option>
+                                        <option value="Abysmal">Abysmal</option>
+                                        <option value="Poor">Poor</option>
+                                        <option value="Average">Average</option>
+                                        <option value="Good">Good</option>
+                                        <option value="Excellent">Excellent</option>
+                                    </select>
+                            </div>
+                        </div>
+
+                        <!-- Speed -->
+                        <p><strong>Speed</strong></p>
+                        <div class="grid3">
+                            <div class="field"><label for="quick">Quickness</label>
+                                <select id="quick">
+                                        <option value="">Unknown</option>
+                                        <option value="Abysmal">Abysmal</option>
+                                        <option value="Poor">Poor</option>
+                                        <option value="Average">Average</option>
+                                        <option value="Good">Good</option>
+                                        <option value="Excellent">Excellent</option>
+                                    </select>
+                            </div>
+                            <div class="field"><label for="stride">Stride</label>
+                                <select id="stride">
+                                        <option value="">Unknown</option>
+                                        <option value="Abysmal">Abysmal</option>
+                                        <option value="Poor">Poor</option>
+                                        <option value="Average">Average</option>
+                                        <option value="Good">Good</option>
+                                        <option value="Excellent">Excellent</option>
+                                    </select>
+                            </div>
+                            <div class="field"><label for="sconfo">Conformation</label>
+                                <select id="sconfo">
+                                        <option value="">Unknown</option>
+                                        <option value="Abysmal">Abysmal</option>
+                                        <option value="Poor">Poor</option>
+                                        <option value="Average">Average</option>
+                                        <option value="Good">Good</option>
+                                        <option value="Excellent">Excellent</option>
+                                    </select>
+                            </div>
+                        </div>
+
+                        <!-- Jumping -->
+                        <p><strong>Jumping Power</strong></p>
+                        <div class="grid3">
+                            <div class="field"><label for="basc">Bascule</label>
+                                <select id="basc">
+                                        <option value="">Unknown</option>
+                                        <option value="Abysmal">Abysmal</option>
+                                        <option value="Poor">Poor</option>
+                                        <option value="Average">Average</option>
+                                        <option value="Good">Good</option>
+                                        <option value="Excellent">Excellent</option>
+                                    </select>
+                            </div>
+                            <div class="field"><label for="agi">Agility</label>
+                                <select id="agi">
+                                        <option value="">Unknown</option>
+                                        <option value="Abysmal">Abysmal</option>
+                                        <option value="Poor">Poor</option>
+                                        <option value="Average">Average</option>
+                                        <option value="Good">Good</option>
+                                        <option value="Excellent">Excellent</option>
+                                    </select>
+                            </div>
+                            <div class="field"><label for="jconfo">Conformation</label>
+                                <select id="jconfo">
+                                        <option value="">Unknown</option>
+                                        <option value="Abysmal">Abysmal</option>
+                                        <option value="Poor">Poor</option>
+                                        <option value="Average">Average</option>
+                                        <option value="Good">Good</option>
+                                        <option value="Excellent">Excellent</option>
+                                    </select>
+                            </div>
+                        </div>
+
+                        <div class="actions"><button class="primary" type="submit">Save horse</button>
+                            <button id="resetForm" type="button">Clear form</button>
+                        </div>
+                    </form>
+                    <p id="saveStatus" class="small muted" role="status" aria-live="polite"></p>
+                </div>
+
+                <div class="panel"><div class="section-title"><h2>Your herd</h2>
+                        <span class="pill" id="herdCount">0 horses</span></div>
+                    <div class="cards" id="herdList"></div>
+                </div>
+            </section>
+
+            <!--Compare Tab-->
+            <section class="view hidden" id="compare">
+                <div class="panel"><h2>Compare a breeding pair</h2>
+                    <div class="grid">
+                        <div class="field"><label for="parentA">Parent A (usually mare)</label>
+                            <select id="parentA"></select>
+                        </div>
+                        <div class="field"><label for="parentB">Parent B (usually stallion)</label>
+                            <select id="parentB"></select>
+                        </div>
+                    </div>
+                    <div class="actions"><button type="button" id="runCompare">Compare compatibility</button>
+                        <button id="savePair">Save comparison</button>
+                    </div>
+                </div>
+                <div id="compareResults"><div class="empty">Add at least two horses, then choose a pair to compare.</div>
+                </div>
+                <div class="panel">
+                <h2>Saved comparisons</h2><div id="savedPairs">
+                    </div>
+                </div>
+            </section>
+
+            <!--Planner Section-->
+            <section class="view hidden" id="planner">
+                <div class="panel">
+                    <h2>Find breeding pairs</h2>
+                    <p class="muted">Ranks pairings using your recorded physical gene values and genetic warning flags. This is a shortlist helper, this will not predict breeds.</p>
+                    <div class="grid3">
+                        <div class="field"><label for="goal">Primary goal</label>
+                            <select id="goal"><option value="balanced">Balanced performance + lower known risk</option>
+                                <option value="speed">Speed</option>
+                                <option value="health">Health</option>
+                                <option value="jump">Jump strength</option>
+                                <option value="coat">Coat genetics / known health flags</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                        <label for="riskWeight">Penalty for known genetic risk</label>
+                            <select id="riskWeight">
+                                <option value="high">High</option>
+                                <option selected="" value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="includeUnknown">Unknown data</label>
+                            <select id="includeUnknown">
+                                <option value="yes">Include, mark unknowns</option>
+                                <option value="no">Exclude pairs missing performance data</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button class="primary" id="rankPairs">Rank all eligible pairs</button>
+                    </div>
+                </div>
+                <div id="plannerResults">
+                </div>
+            </section>
+
+
+            <section class="view hidden" id="backup">
+                <div class="panel">
+                    <h2>Backup & restore</h2>
+                    <p>Horses and saved comparisons are stored locally on this device. Export data regularly if you want a backup or to move to another device.</p>
+                    <div class="actions">
+                        <button class="primary" id="exportData">Export JSON backup</button>
+                        <label class="tab" for="importFile">Import JSON backup</label>
+                        <input accept=".json,application/json" hidden="" id="importFile" type="file"/>
+                        <button id="exportCsv">Export herd CSV</button>
+                        <button class="danger" id="clearAll">Delete all local data</button>
+                    </div>
+                    <div class="muted small" id="backupStatus" style="margin-top:12px">
+                    </div>
+                </div>
+                <div class="panel">
+                    <h2>How to use genetic results safely</h2>
+                    <div class="notice">
+                        <b>Important:</b>
+                        This tool does not know Keibacraft's exact server configuration, hidden alleles or chromosome linkage. It only calculates simple single-locus Mendelian outcomes when both parents have legible allele pairs. It will not pretend to calculate exact foal stats or complex coat probabilities from incomplete information.
+                    </div>
+                    <ul>
+                        <li>
+                            <b>Frame overo (OLWS):</b>
+                            If both parents are recorded as carrying one Frame allele (for example N/O), the standard model predicts a 25% chance of two copies in a foal. Flag this as a serious risk; confirm the exact notation used by your modpack.
+                        </li>
+                        <li>
+                            <b>Silver dapple / MCOA:</b>
+                            Silver can be associated with eye abnormalities and reduced max health in this mod. A double-copy genotype is flagged for review, but the calculator cannot diagnose a horse from appearance alone.
+                        </li>
+                        <li>
+                            <b>Gray:</b>
+                            Gray-associated melanoma/health effects are noted as a potential concern, especially with two copies, based on the mod's documented genetics. This is a warning, not a guaranteed outcome.
+                        </li>
+                        <li>
+                            <b>Performance:</b>
+                            Speed, health, jump, and size are influenced by genetics and variability. This app shows parental genes and a simple midpoint reference only; it does not claim to know the expected foal value.
+                        </li>
+                        <li>
+                            <b>Inbreeding:</b>
+                            Add lineage notes and avoid close relatives. The app cannot infer pedigree relatedness from names or notes.
+                        </li>
+                        <li>
+                            <b>Best source:</b>
+                            Use the Realistic Horse Genetics gene book or the Keibacraft MSTN book for the best sources of information about a horse to enter into the app.
+                        </li>
+                    </ul>
+                    <p class="muted small">Compatibility reference: Realistic Horse Genetics for Minecraft 1.20.1 describes coat genes, genetic performance traits, chromosome linkage, and coat-linked risks. This app is a tool created by a solo developer and not affiliated with the Realistic Horse Genetics mod or it's author.'</p>
+                </div>
+            </section>
+
+            <div class="footer">v1.0 · Back up your data before clearing browser storage.</div>
+        </div>
+
+        <script>
+            const $ = id => document.getElementById(id);
+            const STORE = 'keibacraftHorseBreeding_v1';
+            let data = {
+                horses: [],
+                pairs: []
+            };
+            try {
+                data = JSON.parse(localStorage.getItem(STORE)) || data
+            } catch (e) {}
+            if (!Array.isArray(data.horses)) data.horses = [];
+            if (!Array.isArray(data.pairs)) data.pairs = [];
+            const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+            const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            } [c]));
+            const num = id => {
+                let v = $(id).value;
+                return v === '' ? null : Number(v)
+            };
+
+            function setSaveStatus(message, isError = false) {
+                let el = $('saveStatus');
+                if (!el) return;
+                el.textContent = message;
+                el.style.color = isError ? 'var(--bad)' : 'var(--good)';
+            }
+
+            function save() {
+    try {
+        localStorage.setItem(STORE, JSON.stringify(data));
+
+        renderAll();
+
+        setSaveStatus(
+            'Saved in this browser on this device.'
+        );
+
+        return true;
+    } catch (err) {
+        console.error('Save failed:', err);
+
+        setSaveStatus(
+            'Save failed: ' + err.message +
+            '. Export a JSON backup if possible.',
+            true
+        );
+
+        return false;
+    }
+}
+
+            function parseGenes(raw) {
+                const out = {};
+                raw.split(/\n/).forEach(line => {
+                    let m = line.match(/^\s*([^:]+)\s*:\s*(.*?)\s*$/);
+                    if (!m) return;
+                    let locus = m[1].trim(),
+                        alleles = m[2].trim().split(/[\/\s,]+/).filter(Boolean);
+                    out[locus] = {
+                        raw: m[2].trim(),
+                        alleles: alleles.length === 2 ? alleles : null
+                    }
+                });
+                return out
+            }
+
+            // Saving Horse information function
+            function getFormHorse() {
+                return {
+                    id: $('horseId').value || uid(),
+                    name: $('name').value.trim(),
+                    sex: $('sex').value,
+                    lineage: $('lineage').value.trim(),
+                    healthNotes: $('healthNotes').value.trim(),
+                    size: $('size').value.trim(),
+                    confidence: $('confidence').value,
+                    genesRaw: $('genes').value,
+                    genes: parseGenes($('genes').value),
+                    lhealth: $('lhealth').value.trim(),
+                    ghealth: $('ghealth').value.trim(),
+                    hhealth: $('hhealth').value.trim(),
+                    athl: $('athl').value.trim(),
+                    ener: $('ener').value.trim(),
+                    quick: $('quick').value.trim(),
+                    stride: $('stride').value.trim(),
+                    sconfo: $('sconfo').value.trim(),
+                    basc: $('basc').value.trim(),
+                    agi: $('agi').value.trim(),
+                    jconfo: $('jconfo').value.trim()
+                };
+            }
+
+            function clearForm() {
+                $('horseForm').reset();
+                $('horseId').value = '';
+                $('formTitle').textContent = 'Add a horse'
+            }
+            $('horseForm').addEventListener('submit', e => {
+                e.preventDefault();
+                try {
+                    const h = getFormHorse();
+                    if (!h.name) {
+                        setSaveStatus('Enter a horse name before saving.', true);
+                        $('name').focus();
+                        return;
+                    }
+                    const i = data.horses.findIndex(x => x.id === h.id);
+                    if (i >= 0) data.horses[i] = h;
+                    else data.horses.push(h);
+                    const persisted = save();
+                    clearForm();
+                    if (!persisted) setSaveStatus('Horse added to the current page, but browser storage failed. Export a JSON backup now.', true);
+                } catch (err) {
+                    setSaveStatus('Could not save horse: ' + (err && err.message ? err.message : String(err)), true);
+                    console.error('Horse save failed:', err);
+                }
+            });
+            $('resetForm').onclick = clearForm;
+
+            function editHorse(id) {
+                const h = data.horses.find(x => x.id === id);
+                if (!h) return;
+                const fields = [
+                    'name', 'sex', 'lineage', 'healthNotes',
+                    'size', 'confidence',
+                    'lhealth', 'ghealth', 'hhealth',
+                    'athl', 'ener', 'quick', 'stride', 'sconfo',
+                    'basc', 'agi', 'jconfo'
+                ];
+                fields.forEach(key => {
+                    const el = $(key);
+                    if (el) el.value = h[key] ?? '';
+                });
+                $('genes').value = h.genesRaw ?? '';
+                $('horseId').value = h.id;
+                $('formTitle').textContent = 'Edit ' + h.name;
+                setSaveStatus('Editing ' + h.name + '. Save horse to store changes.');
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }
+
+            function deleteHorse(id) {
+                let h = data.horses.find(x => x.id === id);
+                if (!h || !confirm('Delete ' + h.name + '? Deleted Horse data cannot be recovered')) return;
+                data.horses = data.horses.filter(x => x.id !== id);
+                save()
+            }
+
+            function renderHerd() {
+                $('herdCount').textContent = `${data.horses.length}
+                 horse${data.horses.length===1?'':'s'}`;
+                let root = $('herdList');
+                if (!data.horses.length) {
+                    root.innerHTML = '<div class="empty">No horses saved yet. Add the first horse above.</div>';
+                    return
+                }
+                root.innerHTML = data.horses.map(h => `<article class="horse-card"><div class="section-title"><h3>${esc(h.name)}
+                    </h3><span class="pill">${esc(h.sex)}</span></div>
+                    <div class="muted small">${esc([h.breed,h.coat].filter(Boolean).join(' · ')||'Breed/coat not recorded')}
+                        </div>
+                <div style="margin:10px 0">${h.speed!=null?`<span class="pill">Speed ${esc(h.speed)}</span>`:''}${h.health!=null?`<span class="pill">Health ${esc(h.health)}</span>`:''}${h.jump!=null?`<span class="pill">Jump ${esc(h.jump)}</span>`:''}</div><div class="small">${Object.keys(h.genes||{}).length} gene loci · ${esc(h.confidence||'Unverified')}</div>${h.lineage?`<p class="small muted">Lineage: ${esc(h.lineage)}</p>`:''}<div class="actions"><button onclick="editHorse('${h.id}')">Edit</button><button onclick="chooseForCompare('${h.id}')">Compare</button><button class="danger" onclick="deleteHorse('${h.id}')">Delete</button></div></article>`).join('')
+            }
+
+            function renderSelects() {
+                ['parentA', 'parentB'].forEach(id => {
+                    let old = $(id).value;
+                    $(id).innerHTML = '<option value="">Choose a horse…</option>' + data.horses.map(h => `<option value="${h.id}">${esc(h.name)} — ${esc(h.sex)}</option>`).join('');
+                    if (data.horses.some(h => h.id === old)) $(id).value = old
+                })
+            }
+
+            function chooseForCompare(id) {
+                $('parentA').value = id;
+                let other = data.horses.find(h => h.id !== id);
+                if (other) $('parentB').value = other.id;
+                showTab('compare');
+                runCompare()
+            }
+
+            function genotype(h, locus) {
+                let key = Object.keys(h.genes || {}).find(k => k.toLowerCase() === locus.toLowerCase());
+                return key ? h.genes[key].alleles : null
+            }
+
+            function cross(a, b) {
+                if (!a || !b || a.length !== 2 || b.length !== 2) return null;
+                let counts = {};
+                for (let x of a)
+                    for (let y of b) {
+                        let pair = [x, y].sort().join('/');
+                        counts[pair] = (counts[pair] || 0) + 25
+                    }
+                return counts
+            }
+
+            function geneRows(a, b) {
+                let names = [...new Set([...Object.keys(a.genes || {}), ...Object.keys(b.genes || {})])];
+                return names.map(n => {
+                    let ga = a.genes[n],
+                        gb = b.genes[n],
+                        prob = cross(ga?.alleles, gb?.alleles);
+                    return {
+                        name: n,
+                        a: ga?.raw || 'Unknown',
+                        b: gb?.raw || 'Unknown',
+                        prob
+                    }
+                })
+            }
+
+            function risks(a, b) {
+                let rows = [];
+                let fA = genotype(a, 'Frame'),
+                    fB = genotype(b, 'Frame');
+                if (fA && fB) {
+                    let ca = fA.filter(x => ['O', 'o', 'Fr', 'nO', 'frame'].includes(x)).length,
+                        cb = fB.filter(x => ['O', 'o', 'Fr', 'nO', 'frame'].includes(x)).length;
+                    let looksCarrier = (g) => g.some(x => /^(O|o|Fr|frame)$/i.test(x));
+                    if (looksCarrier(fA) && looksCarrier(fB)) rows.push({
+                        level: 'bad',
+                        title: 'Frame overo / lethal white syndrome concern',
+                        text: 'Both parents appear to carry a Frame-associated allele. Under the standard single-gene model, a heterozygote × heterozygote cross has a 25% chance of a foal inheriting two copies. Confirm the exact allele notation and modpack rule before breeding.'
+                    });
+                    else rows.push({
+                        level: 'good',
+                        title: 'Frame cross checked',
+                        text: 'Recorded Frame genotypes do not both match the simple carrier pattern recognised by this tool. This is not a guarantee of zero risk if notation differs.'
+                    })
+                } else rows.push({
+                    level: 'warn',
+                    title: 'Frame status unknown',
+                    text: 'At least one parent lacks a recognised Frame genotype. Lethal-white risk cannot be calculated from these records.'
+                });
+                let silverA = genotype(a, 'Silver'),
+                    silverB = genotype(b, 'Silver');
+                if (silverA && silverB) {
+                    let isSilver = x => x.some(v => /^Z$/i.test(v));
+                    if (isSilver(silverA) && isSilver(silverB)) rows.push({
+                        level: 'warn',
+                        title: 'Silver dapple / MCOA review',
+                        text: 'Both parents have a Silver-associated allele. Foal genotype probabilities are shown in the locus table if allele notation is compatible; double-copy Silver can be associated with more pronounced eye abnormalities and reduced max health.'
+                    });
+                    else if (isSilver(silverA) || isSilver(silverB)) rows.push({
+                        level: 'warn',
+                        title: 'Silver-associated health note',
+                        text: 'At least one parent has a Silver-associated allele. Check the foal genotype and the mod breeder guide for MCOA-related health effects.'
+                    })
+                }
+                let grayA = genotype(a, 'Gray'),
+                    grayB = genotype(b, 'Gray');
+                if ((grayA && grayA.some(v => /^G$/i.test(v))) || (grayB && grayB.some(v => /^G$/i.test(v)))) rows.push({
+                    level: 'warn',
+                    title: 'Gray-associated melanoma / health note',
+                    text: 'Gray is present in recorded genetics. The mod describes a link between Gray and melanoma-related health effects, with more concern generally associated with two copies. Exact individual outcome is not predictable here.'
+                });
+                if (a.lineage && b.lineage && a.lineage.toLowerCase().includes(b.name.toLowerCase()) || b.lineage && a.lineage && b.lineage.toLowerCase().includes(a.name.toLowerCase())) rows.push({
+                    level: 'warn',
+                    title: 'Possible close relationship',
+                    text: 'One lineage note appears to mention the other horse. Review the pedigree before breeding.'
+                });
+                if (!rows.some(r => r.level === 'bad' || r.level === 'warn')) rows.push({
+                    level: 'good',
+                    title: 'No known risk detected in entered data',
+                    text: 'This only means the limited rules and available genotypes did not trigger a warning. It is not a guarantee of genetic safety.'
+                });
+                return rows
+            }
+
+const RATING_RANGES = {
+    Abysmal:   { min: 0, max: 0 },
+    Poor:      { min: 1, max: 2 },
+    Average:   { min: 3, max: 5 },
+    Good:      { min: 6, max: 7 },
+    Excellent: { min: 8, max: Infinity }
+};
+
+const RATING_ORDER = [
+    "Abysmal",
+    "Poor",
+    "Average",
+    "Good",
+    "Excellent"
+];
+
+function ratingScore(value) {
+    const scores = {
+        Abysmal: 0,
+        Poor: 1.5,
+        Average: 4,
+        Good: 6.5,
+        Excellent: 8
+    };
+
+    const key = String(value ?? '').trim();
+
+    return Object.prototype.hasOwnProperty.call(scores, key)
+        ? scores[key]
+        : null;
+}
+
+function ratingName(score) {
+    if (score == null || !Number.isFinite(score)) {
+        return 'Unknown';
+    }
+
+    if (score === 0) return 'Abysmal';
+    if (score <= 2) return 'Poor';
+    if (score <= 5) return 'Average';
+    if (score <= 7) return 'Good';
+    return 'Excellent';
+}
+
+function estimateRatingOutcome(parentA, parentB) {
+    const a = RATING_RANGES[parentA];
+    const b = RATING_RANGES[parentB];
+
+    if (!a || !b) {
+        return {
+            outcome: 'Unknown',
+            confidence: 'Insufficient data',
+            method: 'none'
+        };
+    }
+
+    const lower = Math.min(
+        RATING_ORDER.indexOf(parentA),
+        RATING_ORDER.indexOf(parentB)
+    );
+
+    const upper = Math.max(
+        RATING_ORDER.indexOf(parentA),
+        RATING_ORDER.indexOf(parentB)
+    );
+
+    return {
+        outcome: lower === upper
+            ? RATING_ORDER[lower]
+            : `${RATING_ORDER[lower]}–${RATING_ORDER[upper]}`,
+        confidence: 'Low — rating-based estimate',
+        method: 'parent-ratings',
+        note: 'Not a genetic probability.'
+    };
+}
+
+function performance(a, b) {
+    const traits = [
+        { key: 'lhealth', label: 'Lung Health', group: 'health' },
+        { key: 'ghealth', label: 'Gut Health', group: 'health' },
+        { key: 'hhealth', label: 'Hoof Health', group: 'health' },
+        { key: 'athl', label: 'Athleticism', group: 'athl' },
+        { key: 'ener', label: 'Energy', group: 'ener' },
+        { key: 'quick', label: 'Quickness', group: 'speed' },
+        { key: 'stride', label: 'Stride', group: 'speed' },
+        { key: 'sconfo', label: 'Speed Conformation', group: 'speed' },
+        { key: 'basc', label: 'Bascule', group: 'jump' },
+        { key: 'agi', label: 'Agility', group: 'jump' },
+        { key: 'jconfo', label: 'Jumping Conformation', group: 'jump' }
+    ];
+
+    // Keep each trait's group directly on its result row.
+    const rows = traits.map(t => ({
+        key: t.key,
+        label: t.label,
+        group: t.group,
+        a: ratingScore(a[t.key]),
+        b: ratingScore(b[t.key]),
+        summary: false
+    }));
+
+    // Calculate average recorded ratings for health, speed and jumping.
+    for (const group of ['health', 'speed', 'jump']) {
+        const members = rows.filter(t => t.group === group);
+
+        const average = key => {
+            const values = members
+                .map(t => t[key])
+                .filter(v => v != null);
+
+            return values.length
+                ? values.reduce((sum, v) => sum + v, 0) / values.length
+                : null;
+        };
+
+        rows.push({
+            key: group,
+            label: {
+                health: 'Overall Health',
+                speed: 'Overall Speed',
+                jump: 'Overall Jumping'
+            }[group],
+            a: average('a'),
+            b: average('b'),
+            summary: true
+        });
+    }
+
+    return rows;
+}
+
+            function pairResult(a, b) {
+                let rr = risks(a, b),
+                    genes = geneRows(a, b),
+                    stats = performance(a, b);
+                let known = rr.filter(x => x.level === 'bad' || x.level === 'warn').length;
+                return {
+                    a: a.id,
+                    b: b.id,
+                    aName: a.name,
+                    bName: b.name,
+                    date: new Date().toISOString(),
+                    riskCount: known,
+                    risks: rr,
+                    genes,
+                    stats
+                }
+            }
+
+function runCompare() {
+    const results = $('compareResults');
+    const idA = $('parentA').value;
+    const idB = $('parentB').value;
+
+    // Check that both horses have been selected.
+    if (!idA || !idB) {
+        results.innerHTML =
+            '<div class="empty">Choose a horse in both Parent A and Parent B.</div>';
+        return null;
+    }
+
+    // Find the selected horses in the saved registry.
+    const a = data.horses.find(h => h.id === idA);
+    const b = data.horses.find(h => h.id === idB);
+
+    if (!a || !b) {
+        results.innerHTML =
+            '<div class="result warn">One or both selected horses could not be found. Check your registry and select both horses again.</div>';
+        return null;
+    }
+
+    if (a.id === b.id) {
+        results.innerHTML =
+            '<div class="result bad">Select two different horses to compare.</div>';
+        return null;
+    }
+
+    try {
+        const result = pairResult(a, b);
+        results.innerHTML = renderResult(result);
+        return result;
+    } catch (err) {
+        console.error('Comparison failed:', err);
+
+        results.innerHTML =
+            '<div class="result bad"><strong>Comparison failed</strong>' +
+            '<p class="small">Error: ' +
+            esc(err.message || String(err)) +
+            '</p><p class="small">Open the browser console for more details.</p></div>';
+
+        return null;
+    }
+}
+            function renderResult(r) {
+                let riskHtml = r.risks.map(x => `<div class="result ${x.level}"><b>${esc(x.title)}</b><div class="small">${esc(x.text)}</div></div>`).join('');
+                let statHtml = r.stats
+    .filter(s => !s.summary)
+    .map(s => {
+        const midpoint =
+            s.a != null && s.b != null
+                ? (s.a + s.b) / 2
+                : null;
+
+        const estimate = midpoint == null
+            ? 'Unknown'
+            : `${ratingName(midpoint)} (${midpoint.toFixed(1)}/5)`;
+
+        return `<tr>
+            <td>${esc(s.label)}</td>
+            <td>${s.a == null ? 'Unknown' : esc(ratingName(s.a))}</td>
+            <td>${s.b == null ? 'Unknown' : esc(ratingName(s.b))}</td>
+            <td>${estimate}</td>
+        </tr>`;
+    }).join('');
+                let geneHtml = r.genes.map(g => `<tr><td>${esc(g.name)}</td><td>${esc(g.a)}</td><td>${esc(g.b)}</td><td>${g.prob?Object.entries(g.prob).map(([k,v])=>`${esc(k)}: ${v}%`).join('<br>'):'Unknown — no probability calculated'}</td></tr>`).join('');
+                return`<div class="panel"><div class="section-title"><h2>${esc(r.aName)} × ${esc(r.bName)}</h2><span class="pill">${r.riskCount} warning(s) to review</span></div><p class="muted small">Probabilities below assume a simple single-locus cross and correct allele notation. Complex linked/non-Mendelian inheritance is not modelled.</p><h3>Known health-risk checks</h3>${riskHtml}               <h3>Comparison Evaluation</h3><div class="tablewrap"><table><thead><tr><th>Trait</th><th>${esc(r.aName)}</th><th>${esc(r.bName)}</th><th>Estimated foal rating (midpoint reference)</th></tr></thead><tbody>${statHtml}</tbody></table></div><p class="muted small">The midpoint is not a predicted foal stat. RHG performance traits include genetic variation and inheritance complexity.</p><h3>Entered genetic loci</h3><div class="tablewrap"><table><thead><tr><th>Locus</th><th>${esc(r.aName)}</th><th>${esc(r.bName)}</th><th>Simple cross outcomes</th></tr></thead><tbody>${geneHtml||'<tr><td colspan="4">No genotypes recorded.</td></tr>'}</tbody></table></div><p class="muted small">Unknown or hidden genes remain unknown. Percentages across genotype outcomes for one locus total 100%; they do not imply an exact visible coat probability.</p></div>`
+            }
+            $('runCompare').addEventListener('click', runCompare);
+            $('savePair').onclick = () => {
+                let r = runCompare();
+                if (!r) return;
+                data.pairs.unshift({
+                    ...r,
+                    id: uid()
+                });
+                save();
+                $('compareResults').innerHTML = renderResult(r);
+            };
+
+            function renderSavedPairs() {
+                let root = $('savedPairs');
+                if (!data.pairs.length) {
+                    root.innerHTML = '<div class="empty">No saved comparisons yet.</div>';
+                    return
+                }
+                root.innerHTML = data.pairs.map(p => `<div class="horse-card" style="margin-bottom:10px"><div class="section-title"><b>${esc(p.aName)} × ${esc(p.bName)}</b><span class="pill">${p.riskCount} warning(s)</span></div><div class="muted small">${new Date(p.date).toLocaleString()}</div><div class="actions"><button onclick="loadSavedPair('${p.id}')">View snapshot</button><button class="danger" onclick="deletePair('${p.id}')">Delete</button></div></div>`).join('')
+            }
+
+            function loadSavedPair(id) {
+                let p = data.pairs.find(x => x.id === id);
+                if (p) {
+                    $('compareResults').innerHTML = renderResult(p);
+                    showTab('compare')
+                }
+            }
+
+            function deletePair(id) {
+                data.pairs = data.pairs.filter(p => p.id !== id);
+                save()
+            }
+
+            function renderPlanner() {
+                let root = $('plannerResults');
+                let hs = data.horses.filter(h => h.sex !== 'Gelding' && h.sex !== 'Unknown');
+                if (hs.length < 2) {
+                    root.innerHTML = '<div class="empty">Add at least two potential breeding horses. Mark sex to filter geldings out.</div>';
+                    return
+                }
+                let goal = $('goal').value,
+                    rw = $('riskWeight').value,
+                    inc = $('includeUnknown').value;
+                let pairs = [];
+                for (let i = 0; i < hs.length; i++)
+                    for (let j = i + 1; j < hs.length; j++) {
+                        let a = hs[i],
+                            b = hs[j];
+                        if (a.sex === b.sex) continue;
+                        let stats = performance(a, b);
+                        if (inc === 'no' && stats.some(s => s.a == null || s.b == null)) continue;
+                        let rr = risks(a, b),
+                            risk = rr.filter(x => x.level === 'bad').length * 3 + rr.filter(x => x.level === 'warn').length;
+                        let trait = goal === 'speed' ? 'speed' : goal === 'health' ? 'health' : goal === 'jump' ? 'jump' : null;
+                        let score = 0,
+                            known = 0;
+                        if (trait) {
+                            let s = stats.find(x => x.key === trait);
+                            if (s.a != null && s.b != null) {
+                                score = (Number(s.a) + Number(s.b)) / 2;
+                                known++
+                            }
+                        } else if (goal === 'balanced') {
+                            let vals = stats.filter(
+    s => !s.summary && s.a != null && s.b != null
+);
+                            score = vals.length ? vals.reduce((sum, s) => sum + (Number(s.a) + Number(s.b)) / 2, 0) / vals.length : 0;
+                            known = vals.length
+                        } else {
+                            score = 100 - risk * 10;
+                            known = 1
+                        }
+                        let penalty = rw === 'high' ? 30 : rw === 'medium' ? 15 : 5;
+                        let final = score - risk * penalty;
+                        pairs.push({
+                            a,
+                            b,
+                            rr,
+                            score,
+                            final,
+                            known,
+                            risk
+                        })
+                    }
+                pairs.sort((x, y) => y.final - x.final);
+                if (!pairs.length) {
+                    root.innerHTML = '<div class="empty">No mare–stallion pairs found. Check recorded sex values.</div>';
+                    return
+                }
+                root.innerHTML = `<div class="panel"><h2>Candidate ranking</h2><p class="muted small">Scores are relative shortlist scores from entered values and selected penalty; traits on different scales are not scientifically normalized. Risk flags matter more than the score.</p><div class="cards">${pairs.map((p,i)=>`<article class="horse-card"><div class="section-title"><h3>#${i+1} ${esc(p.a.name)} × ${esc(p.b.name)}</h3><span class="pill">${p.risk} risk flag(s)</span></div><div class="stat">${p.known?esc(Math.round(p.final*100)/100):'N/A'}</div><div class="muted small">Relative shortlist score · ${p.known?'some relevant data entered':'insufficient relevant data'}</div><p class="small">${p.rr.filter(x=>x.level!=='good').map(x=>esc(x.title)).join(' · ')||'No known warning triggered (not a safety guarantee)'}</p><div class="actions"><button onclick="choosePair('${p.a.id}','${p.b.id}')">Inspect pair</button></div></article>`).join('')}</div></div>`
+            }
+
+            function choosePair(a, b) {
+                $('parentA').value = a;
+                $('parentB').value = b;
+                showTab('compare');
+                runCompare()
+            }
+            $('rankPairs').onclick = renderPlanner;
+
+            function showTab(id) {
+                document.querySelectorAll('.view').forEach(x => x.classList.toggle('hidden', x.id !== id));
+                document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.tab === id));
+                if (id === 'compare') renderSelects();
+                if (id === 'planner') renderPlanner();
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                })
+            }
+            document.querySelectorAll('.tab[data-tab]').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+
+            function renderAll() {
+                renderHerd();
+                renderSelects();
+                renderSavedPairs()
+            }
+
+            function download(name, content, type) {
+                let blob = new Blob([content], {
+                        type
+                    }),
+                    url = URL.createObjectURL(blob),
+                    a = document.createElement('a');
+                a.href = url;
+                a.download = name;
+                a.click();
+                setTimeout(() => URL.revokeObjectURL(url), 1000)
+            }
+            $('exportData').onclick = () => download('keibacraft-horse-backup.json', JSON.stringify({
+                version: 1,
+                exportedAt: new Date().toISOString(),
+                ...data
+            }, null, 2), 'application/json');
+            $('exportCsv').onclick = () => {
+                let fields = [
+    'name', 'sex', 'lineage', 'healthNotes', 'size',
+    'confidence', 'lhealth', 'ghealth', 'hhealth',
+    'athl', 'ener', 'quick', 'stride', 'sconfo',
+    'basc', 'agi', 'jconfo', 'genesRaw'
+];
+                let quote = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+                download('keibacraft-horses.csv', [fields.join(','), ...data.horses.map(h => fields.map(k => quote(h[k])).join(','))].join('\n'), 'text/csv')
+            };
+            $('importFile').onchange = async e => {
+                let f = e.target.files[0];
+                if (!f) return;
+                try {
+                    let v = JSON.parse(await f.text());
+                    if (!Array.isArray(v.horses)) throw Error('This file does not contain a horse list.');
+                    if (!confirm(`Import ${v.horses.length} horses and ${Array.isArray(v.pairs)?v.pairs.length:0} comparisons? Existing records with matching IDs will be replaced.`)) return;
+                    let map = new Map(data.horses.map(h => [h.id, h]));
+                    v.horses.forEach(h => map.set(h.id || uid(), {
+                        ...h,
+                        id: h.id || uid(),
+                        genes: h.genes || parseGenes(h.genesRaw || '')
+                    }));
+                    data.horses = [...map.values()];
+                    let pm = new Map(data.pairs.map(p => [p.id, p]));
+                    (v.pairs || []).forEach(p => pm.set(p.id || uid(), p));
+                    data.pairs = [...pm.values()];
+                    save();
+                    $('backupStatus').textContent = 'Import complete.'
+                } catch (err) {
+                    $('backupStatus').textContent = 'Import failed: ' + err.message
+                } finally {
+                    e.target.value = ''
+                }
+            };
+            $('clearAll').onclick = () => {
+                if (confirm('Delete every saved horse and comparison from this browser? Export a backup first if needed.')) {
+                    data = {
+                        horses: [],
+                        pairs: []
+                    };
+                    save();
+                    clearForm();
+                    $('backupStatus').textContent = 'Local data cleared.'
+                }
+            };
+            renderAll();
+        </script>
+    </body>
+</html>
